@@ -1,0 +1,13 @@
+# Virtual environment folder
+venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# OS specific files
+.DS_Store
+
+# SQLite temporary files (if any)
+*.db-journal
+
