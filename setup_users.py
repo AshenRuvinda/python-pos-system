@@ -4,7 +4,7 @@ import os
 def setup_database():
     """
     Creates the database directory if it doesn't exist and sets up the required tables
-    with sample users and products.
+    with admin, manager, and 2 cashier users along with sample products.
     """
     # Create database directory if it doesn't exist
     if not os.path.exists("database"):
@@ -35,27 +35,22 @@ def setup_database():
     )
     ''')
     
-    # Check if users already exist
-    cursor.execute("SELECT COUNT(*) FROM users")
-    user_count = cursor.fetchone()[0]
+    # Clear existing users (to ensure we have exactly what's requested)
+    cursor.execute("DELETE FROM users")
     
-    # Add sample users if none exist
-    if user_count == 0:
-        sample_users = [
-            ("admin", "admin123", "admin"),
-            ("manager", "manager123", "manager"),
-            ("inventory", "inventory123", "inventory"),
-            ("cashier1", "cashier123", "cashier"),
-            ("cashier2", "cashier456", "cashier")
-        ]
-        
-        cursor.executemany(
-            "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
-            sample_users
-        )
-        print(f"Added {len(sample_users)} sample users")
-    else:
-        print(f"Database already has {user_count} users")
+    # Add requested users: admin, manager, and 2 cashiers
+    requested_users = [
+        ("admin", "admin123", "admin"),
+        ("manager", "manager123", "manager"),
+        ("cashier1", "cash123", "cashier"),
+        ("cashier2", "cash456", "cashier")
+    ]
+    
+    cursor.executemany(
+        "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
+        requested_users
+    )
+    print(f"Added {len(requested_users)} users as requested")
     
     # Check if products already exist
     cursor.execute("SELECT COUNT(*) FROM products")
@@ -89,21 +84,19 @@ def setup_database():
     conn.close()
     
     print("Database setup complete!")
-    print("\nSample Users:")
+    print("\nUser Accounts:")
     print("--------------------")
     print("Admin User:")
     print("  Username: admin")
     print("  Password: admin123")
-    print("\nInventory Users:")
-    print("  Username: inventory")
-    print("  Password: inventory123")
+    print("\nManager User:")
     print("  Username: manager")
     print("  Password: manager123")
     print("\nCashier Users:")
     print("  Username: cashier1")
-    print("  Password: cashier123")
+    print("  Password: cash123")
     print("  Username: cashier2")
-    print("  Password: cashier456")
+    print("  Password: cash456")
     print("--------------------")
     
 if __name__ == "__main__":

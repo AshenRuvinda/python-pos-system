@@ -93,7 +93,9 @@ def login_window():
                 # Direct to appropriate window based on role
                 if role.lower() in ['admin', 'inventory', 'manager']:
                     open_inventory_management(username, role)
-                else:  # Cashier or other roles
+                elif role.lower() == 'cashier':  # Explicitly handle cashier role
+                    open_dashboard(username, role)
+                else:  # Fallback for any other roles
                     open_dashboard(username, role)
             else:
                 messagebox.showerror("Login Failed", "Invalid username or password.")
