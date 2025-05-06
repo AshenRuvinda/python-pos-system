@@ -13,8 +13,8 @@ def open_dashboard(username, role):
     ctk.set_appearance_mode("light")
     app = ctk.CTk()
     app.title(f"LANKA SUPER STORE - POS System")
-    app.geometry("1000x700")
-    app.configure(fg_color="#F0F0F0")  # Light gray background
+    app.geometry("1100x770")
+    app.configure(fg_color="#CCCCCC")  # Light gray background matching the design
 
     # Set grid layout for the entire app
     app.grid_rowconfigure(0, weight=1)
@@ -45,16 +45,15 @@ def open_dashboard(username, role):
             # Create product button
             btn = ctk.CTkButton(
                 product_frame,
-                text=name,
-                font=("Arial", 14),
+                text=name,  # Using actual product name from database
+                font=("Arial", 14, "bold"),
                 width=150,
                 height=100,
-                fg_color="#FFFFFF",
-                text_color="#000000",
-                hover_color="#E0E0E0",
-                corner_radius=8,
-                border_width=1,
-                border_color="#CCCCCC",
+                fg_color="#DDDDDD",  # Light gray color for product buttons
+                text_color="#333333",  # Dark gray text
+                hover_color="#BBBBBB",
+                corner_radius=10,
+                border_width=0,
                 anchor="center"
             )
             btn.grid(row=row_idx, column=col_idx, padx=10, pady=10, sticky="nsew")
@@ -120,7 +119,7 @@ def open_dashboard(username, role):
             update_cart()
             popup.destroy()
 
-        ctk.CTkButton(popup, text="Add to Cart", command=confirm).pack(pady=10)
+        ctk.CTkButton(popup, text="Add to Cart", command=confirm, fg_color="#00AA00").pack(pady=10)
 
     def update_cart():
         total = 0
@@ -132,7 +131,7 @@ def open_dashboard(username, role):
         # Add header row
         headers = ["No", "Name", "Qty", "Unit Price", "Amount"]
         for col, header in enumerate(headers):
-            lbl = ctk.CTkLabel(cart_table, text=header, font=("Arial", 12, "bold"))
+            lbl = ctk.CTkLabel(cart_table, text=header, font=("Arial", 12, "bold"), text_color="#333333")
             lbl.grid(row=0, column=col, padx=5, pady=5, sticky="w")
         
         # Add cart items
@@ -141,19 +140,32 @@ def open_dashboard(username, role):
             subtotal = price * qty
             
             # Item number
-            ctk.CTkLabel(cart_table, text=f"{index+1:02d}.").grid(row=index+1, column=0, padx=5, pady=5, sticky="w")
+            ctk.CTkLabel(cart_table, text=f"{index+1:02d}.", text_color="#333333").grid(row=index+1, column=0, padx=5, pady=5, sticky="w")
             
             # Name
-            ctk.CTkLabel(cart_table, text=name).grid(row=index+1, column=1, padx=5, pady=5, sticky="w")
+            ctk.CTkLabel(cart_table, text=name, text_color="#333333").grid(row=index+1, column=1, padx=5, pady=5, sticky="w")
             
             # Quantity
-            ctk.CTkLabel(cart_table, text=str(qty)).grid(row=index+1, column=2, padx=5, pady=5, sticky="w")
+            ctk.CTkLabel(cart_table, text=str(qty), text_color="#333333").grid(row=index+1, column=2, padx=5, pady=5, sticky="w")
             
             # Unit price
-            ctk.CTkLabel(cart_table, text=f"{price:.2f}").grid(row=index+1, column=3, padx=5, pady=5, sticky="w")
+            ctk.CTkLabel(cart_table, text=f"{price:.2f}", text_color="#333333").grid(row=index+1, column=3, padx=5, pady=5, sticky="w")
             
             # Amount
-            ctk.CTkLabel(cart_table, text=f"{subtotal:.2f}").grid(row=index+1, column=4, padx=5, pady=5, sticky="w")
+            ctk.CTkLabel(cart_table, text=f"{subtotal:.2f}", text_color="#333333").grid(row=index+1, column=4, padx=5, pady=5, sticky="w")
+            
+            # Delete button (red X)
+            delete_btn = ctk.CTkButton(
+                cart_table, 
+                text="✖", 
+                width=25, 
+                height=25, 
+                fg_color="#FF3333", 
+                hover_color="#CC0000", 
+                corner_radius=12,
+                command=lambda idx=index: remove_item(idx)
+            )
+            delete_btn.grid(row=index+1, column=5, padx=5, pady=5)
             
             total += subtotal
         
@@ -319,48 +331,96 @@ def open_dashboard(username, role):
         btn_frame = ctk.CTkFrame(frame)
         btn_frame.pack(fill="x", pady=20)
         
-        cancel_btn = ctk.CTkButton(btn_frame, text="Cancel", command=checkout_window.destroy)
+        cancel_btn = ctk.CTkButton(btn_frame, text="Cancel", command=checkout_window.destroy, fg_color="#FF3333", hover_color="#CC0000")
         cancel_btn.pack(side="left", padx=10, fill="x", expand=True)
         
-        confirm_btn = ctk.CTkButton(btn_frame, text="Checkout", command=confirm_checkout)
+        confirm_btn = ctk.CTkButton(btn_frame, text="Checkout", command=confirm_checkout, fg_color="#00AA00", hover_color="#008800")
         confirm_btn.pack(side="right", padx=10, fill="x", expand=True)
 
-    # Main layout
-    # Header with store name
-    header_frame = ctk.CTkFrame(app, height=80, fg_color="#F0F0F0", corner_radius=0)
+    # Main layout with darker gray background matching the design
+    app.configure(fg_color="#CCCCCC")
+
+    # Main container frame
+    main_container = ctk.CTkFrame(app, fg_color="#CCCCCC", corner_radius=0)
+    main_container.pack(fill="both", expand=True, padx=10, pady=10)
+
+    # Header with store logo and name (left side)
+    header_frame = ctk.CTkFrame(main_container, height=80, fg_color="#CCCCCC", corner_radius=0)
     header_frame.pack(fill="x", pady=0)
     
-    # Store name with "LANKA" in caps and "Super Store" below
-    name_frame = ctk.CTkFrame(header_frame, fg_color="transparent")
-    name_frame.pack(side="left", padx=20)
+    # Logo and store name side by side
+    logo_frame = ctk.CTkFrame(header_frame, fg_color="transparent")
+    logo_frame.pack(side="left", padx=20)
     
-    ctk.CTkLabel(name_frame, text="LANKA", font=("Arial", 24, "bold")).pack(anchor="w")
-    ctk.CTkLabel(name_frame, text="Super Store", font=("Arial", 14)).pack(anchor="w")
+    # Try to load store logo as a circular image
+    try:
+        logo_img = Image.open("assets/logo.png")  # Update with your logo path
+        logo_img = logo_img.resize((50, 50))
+        logo_photo = ImageTk.PhotoImage(logo_img)
+        logo_label = ctk.CTkLabel(logo_frame, text="", image=logo_photo)
+        logo_label.image = logo_photo
+        logo_label.pack(side="left", padx=(0, 10))
+    except:
+        # If logo loading fails, create a placeholder
+        logo_placeholder = ctk.CTkFrame(logo_frame, width=50, height=50, corner_radius=25, fg_color="#888888")
+        logo_placeholder.pack(side="left", padx=(0, 10))
+    
+    # Store name with shopping cart icon
+    name_frame = ctk.CTkFrame(logo_frame, fg_color="transparent")
+    name_frame.pack(side="left")
+    
+    store_name_frame = ctk.CTkFrame(name_frame, fg_color="transparent")
+    store_name_frame.pack(anchor="w")
+    
+    l_label = ctk.CTkLabel(store_name_frame, text="L", font=("Arial", 28, "bold"))
+    l_label.pack(side="left", padx=0)
+    
+    anka_label = ctk.CTkLabel(store_name_frame, text="ANKA", font=("Arial", 24, "bold"))
+    anka_label.pack(side="left", padx=0)
+    
+    # Shopping cart icon
+    cart_icon_frame = ctk.CTkFrame(store_name_frame, fg_color="transparent")
+    cart_icon_frame.pack(side="left", padx=5)
+    
+    try:
+        cart_icon = Image.open("assets/cart_icon.png")  # Update with your icon path
+        cart_icon = cart_icon.resize((30, 30))
+        cart_photo = ImageTk.PhotoImage(cart_icon)
+        cart_icon_label = ctk.CTkLabel(cart_icon_frame, text="", image=cart_photo)
+        cart_icon_label.image = cart_photo
+        cart_icon_label.pack()
+    except:
+        # If cart icon loading fails, use text
+        cart_icon_label = ctk.CTkLabel(cart_icon_frame, text="🛒", font=("Arial", 24))
+        cart_icon_label.pack()
+    
+    super_store_label = ctk.CTkLabel(name_frame, text="Super\nStore", font=("Arial", 14))
+    super_store_label.pack(anchor="w")
     
     # Main content area
-    content_frame = ctk.CTkFrame(app, fg_color="#F0F0F0")
-    content_frame.pack(fill="both", expand=True, padx=10, pady=5)
+    content_frame = ctk.CTkFrame(main_container, fg_color="#CCCCCC")
+    content_frame.pack(fill="both", expand=True, padx=0, pady=5)
     
     # Left panel - Products
-    left_panel = ctk.CTkFrame(content_frame, width=400, fg_color="#F0F0F0")
+    left_panel = ctk.CTkFrame(content_frame, width=400, fg_color="#CCCCCC")
     left_panel.pack(side="left", fill="both", expand=True, padx=5, pady=5)
     
-    # Search box
-    search_frame = ctk.CTkFrame(left_panel, height=40, fg_color="#FFFFFF", corner_radius=20)
+    # Search box with rounded corners
+    search_frame = ctk.CTkFrame(left_panel, height=40, fg_color="#DDDDDD", corner_radius=20)
     search_frame.pack(fill="x", pady=10, padx=10)
     
     search_entry = ctk.CTkEntry(search_frame, placeholder_text="Search here", border_width=0, 
-                               fg_color="transparent", height=30)
+                               fg_color="transparent", height=30, text_color="#666666")
     search_entry.pack(side="left", fill="both", expand=True, padx=10, pady=5)
     
     search_btn = ctk.CTkButton(search_frame, text="🔍", width=30, fg_color="transparent", 
-                              hover_color="#E0E0E0", corner_radius=20, command=search_products)
+                              hover_color="#BBBBBB", corner_radius=20, command=search_products)
     search_btn.pack(side="right", padx=5, pady=5)
     
     search_entry.bind("<Return>", lambda event: search_products())
     
     # Products grid in a scrollable frame
-    product_frame = ctk.CTkScrollableFrame(left_panel, fg_color="#F0F0F0")
+    product_frame = ctk.CTkScrollableFrame(left_panel, fg_color="#CCCCCC")
     product_frame.pack(fill="both", expand=True, pady=5)
     
     # Configure grid for product buttons
@@ -368,28 +428,62 @@ def open_dashboard(username, role):
         product_frame.grid_columnconfigure(i, weight=1)
     
     # Right panel - Cart and checkout
-    right_panel = ctk.CTkFrame(content_frame, width=400, fg_color="#FFFFFF", corner_radius=10)
+    right_panel = ctk.CTkFrame(content_frame, width=450, fg_color="#DDDDDD", corner_radius=10)
     right_panel.pack(side="right", fill="both", expand=False, padx=5, pady=5)
     
     # Cart header
     cart_header = ctk.CTkFrame(right_panel, height=50, fg_color="transparent")
     cart_header.pack(fill="x", padx=20, pady=10)
     
-    ctk.CTkLabel(cart_header, text="🛒 CART", font=("Arial", 18, "bold")).pack(side="left")
+    # Cart icon and text
+    cart_label_frame = ctk.CTkFrame(cart_header, fg_color="transparent")
+    cart_label_frame.pack(side="left")
+    
+    try:
+        small_cart_icon = Image.open("assets/cart_icon.png")  # Update with your icon path
+        small_cart_icon = small_cart_icon.resize((25, 25))
+        small_cart_photo = ImageTk.PhotoImage(small_cart_icon)
+        small_cart_label = ctk.CTkLabel(cart_label_frame, text="", image=small_cart_photo)
+        small_cart_label.image = small_cart_photo
+        small_cart_label.pack(side="left", padx=(0, 5))
+    except:
+        # If icon loading fails, use text
+        small_cart_label = ctk.CTkLabel(cart_label_frame, text="🛒", font=("Arial", 18))
+        small_cart_label.pack(side="left", padx=(0, 5))
+    
+    ctk.CTkLabel(cart_label_frame, text="CART", font=("Arial", 18, "bold")).pack(side="left")
     
     # Cart items table
-    cart_table = ctk.CTkScrollableFrame(right_panel, fg_color="transparent")
+    cart_table = ctk.CTkScrollableFrame(right_panel, fg_color="#EEEEEE", corner_radius=5)
     cart_table.pack(fill="both", expand=True, padx=20, pady=10)
     
     # Configure cart table columns
-    for i in range(5):  # 5 columns (No, Name, Qty, Unit Price, Amount)
+    for i in range(6):  # 6 columns (No, Name, Qty, Unit Price, Amount, Delete)
         cart_table.grid_columnconfigure(i, weight=1 if i == 1 else 0)
     
-    # User info panel
-    user_panel = ctk.CTkFrame(right_panel, fg_color="#F0F0F0", corner_radius=8)
+    # User info panel with green circular icon
+    user_panel = ctk.CTkFrame(right_panel, fg_color="#EEEEEE", corner_radius=8)
     user_panel.pack(fill="x", padx=20, pady=(0, 10))
     
-    ctk.CTkLabel(user_panel, text=f"{username}({role})", font=("Arial", 12)).pack(side="left", padx=10, pady=10)
+    # User icon (green circle with profile)
+    user_icon_frame = ctk.CTkFrame(user_panel, width=30, height=30, corner_radius=15, fg_color="#00AA00")
+    user_icon_frame.pack(side="left", padx=10, pady=10)
+    
+    # Try to load a user icon, or use a placeholder
+    try:
+        user_icon = Image.open("assets/user_icon.png")  # Update with your icon path
+        user_icon = user_icon.resize((20, 20))
+        user_photo = ImageTk.PhotoImage(user_icon)
+        user_icon_label = ctk.CTkLabel(user_icon_frame, text="", image=user_photo)
+        user_icon_label.image = user_photo
+        user_icon_label.pack()
+    except:
+        # If user icon loading fails, use text placeholder
+        user_icon_label = ctk.CTkLabel(user_icon_frame, text="👤", font=("Arial", 14), text_color="#FFFFFF")
+        user_icon_label.pack()
+    
+    # Username and role
+    ctk.CTkLabel(user_panel, text=f"{username}({role})", font=("Arial", 12)).pack(side="left", padx=5, pady=10)
     
     # Summary panel
     summary_panel = ctk.CTkFrame(right_panel, fg_color="#FFFFFF", corner_radius=8)
@@ -398,29 +492,29 @@ def open_dashboard(username, role):
     # NET TOTAL
     total_row = ctk.CTkFrame(summary_panel, fg_color="transparent")
     total_row.pack(fill="x", padx=10, pady=5)
-    ctk.CTkLabel(total_row, text="NET TOTAL", font=("Arial", 14, "bold")).pack(side="left")
-    net_total_label = ctk.CTkLabel(total_row, text="0.00", font=("Arial", 14))
+    ctk.CTkLabel(total_row, text="NET TOTAL", font=("Arial", 14, "bold"), text_color="#333333").pack(side="left")
+    net_total_label = ctk.CTkLabel(total_row, text="0.00", font=("Arial", 14), text_color="#333333")
     net_total_label.pack(side="right")
     
     # CASH row
     cash_row = ctk.CTkFrame(summary_panel, fg_color="transparent")
     cash_row.pack(fill="x", padx=10, pady=2)
-    ctk.CTkLabel(cash_row, text="CASH", font=("Arial", 12)).pack(side="left")
-    cash_label = ctk.CTkLabel(cash_row, text="0.00", font=("Arial", 12))
+    ctk.CTkLabel(cash_row, text="CASH", font=("Arial", 12), text_color="#333333").pack(side="left")
+    cash_label = ctk.CTkLabel(cash_row, text="0.00", font=("Arial", 12), text_color="#333333")
     cash_label.pack(side="right")
     
     # BALANCE row
     balance_row = ctk.CTkFrame(summary_panel, fg_color="transparent")
     balance_row.pack(fill="x", padx=10, pady=2)
-    ctk.CTkLabel(balance_row, text="BALANCE", font=("Arial", 12)).pack(side="left")
-    balance_amt_label = ctk.CTkLabel(balance_row, text="0.00", font=("Arial", 12))
+    ctk.CTkLabel(balance_row, text="BALANCE", font=("Arial", 12), text_color="#333333").pack(side="left")
+    balance_amt_label = ctk.CTkLabel(balance_row, text="0.00", font=("Arial", 12), text_color="#333333")
     balance_amt_label.pack(side="right")
     
     # Total items row
     items_row = ctk.CTkFrame(summary_panel, fg_color="transparent")
     items_row.pack(fill="x", padx=10, pady=5)
-    ctk.CTkLabel(items_row, text="TOTAL ITEMS", font=("Arial", 12)).pack(side="left")
-    total_items_label = ctk.CTkLabel(items_row, text="00", font=("Arial", 12))
+    ctk.CTkLabel(items_row, text="TOTAL ITEMS", font=("Arial", 12), text_color="#333333").pack(side="left")
+    total_items_label = ctk.CTkLabel(items_row, text="00", font=("Arial", 12), text_color="#333333")
     total_items_label.pack(side="right")
     
     # Action buttons
@@ -428,23 +522,23 @@ def open_dashboard(username, role):
     buttons_frame.pack(fill="x", padx=20, pady=10)
     
     # Clear Cart button (red)
-    clear_btn = ctk.CTkButton(buttons_frame, text="Clear Cart", fg_color="#FF3333", hover_color="#CC0000",
-                             command=clear_cart)
+    clear_btn = ctk.CTkButton(buttons_frame, text="Clear Cart", fg_color="#FF0000", hover_color="#CC0000",
+                             command=clear_cart, height=40, corner_radius=5)
     clear_btn.pack(side="left", padx=5, fill="x", expand=True)
     
     # Checkout button (green)
     checkout_btn = ctk.CTkButton(buttons_frame, text="Checkout", fg_color="#00AA00", hover_color="#008800",
-                                command=checkout)
+                                command=checkout, height=40, corner_radius=5)
     checkout_btn.pack(side="right", padx=5, fill="x", expand=True)
     
-    # Logout button
-    logout_btn = ctk.CTkButton(right_panel, text="Logout", fg_color="#FF3333", hover_color="#CC0000",
-                              command=app.destroy, width=120, corner_radius=20)
+    # Logout button - round red button
+    logout_btn = ctk.CTkButton(right_panel, text="Logout", fg_color="#FF0000", hover_color="#CC0000",
+                              command=app.destroy, width=100, height=35, corner_radius=17)
     logout_btn.pack(side="right", padx=20, pady=10)
 
     # Admin Panel (if applicable)
     if role.lower() == "admin":
-        admin_panel = ctk.CTkFrame(left_panel, fg_color="#FFFFFF", corner_radius=8)
+        admin_panel = ctk.CTkFrame(left_panel, fg_color="#EEEEEE", corner_radius=8)
         admin_panel.pack(fill="x", pady=10, padx=10)
         
         ctk.CTkLabel(admin_panel, text="🛠️ Admin Panel", font=("Arial", 14, "bold")).pack(pady=5)
@@ -481,7 +575,7 @@ def open_dashboard(username, role):
             except Exception as e:
                 messagebox.showerror("Error", f"An error occurred: {str(e)}")
 
-        ctk.CTkButton(admin_panel, text="Add Product", command=add_product).pack(padx=10, pady=10, fill="x")
+        ctk.CTkButton(admin_panel, text="Add Product", command=add_product, fg_color="#00AA00").pack(padx=10, pady=10, fill="x")
 
     # Initial load
     load_products()
