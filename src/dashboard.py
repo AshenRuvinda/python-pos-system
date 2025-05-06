@@ -3,9 +3,10 @@ from tkinter import messagebox
 import sqlite3
 from datetime import datetime
 
-cart = []  # Global cart list
-
 def open_dashboard(username, role):
+    # Initialize cart as a local variable in the function scope
+    cart = []  
+    
     ctk.set_appearance_mode("dark")
     app = ctk.CTk()
     app.title(f"SuperPOS 2030 - Dashboard ({role})")
@@ -31,7 +32,8 @@ def open_dashboard(username, role):
 
     # --- Add to Cart ---
     def add_to_cart(product):
-        if product[3] <= 0:
+        product_id, name, price, qty = product
+        if qty <= 0:
             messagebox.showerror("Out of Stock", "This product is unavailable.")
             return
         cart.append(product)
@@ -44,8 +46,9 @@ def open_dashboard(username, role):
             widget.destroy()
 
         for item in cart:
-            ctk.CTkLabel(cart_frame, text=f"{item[1]} - Rs. {item[2]}").pack()
-            total += item[2]
+            product_id, name, price, qty = item
+            ctk.CTkLabel(cart_frame, text=f"{name} - Rs. {price}").pack()
+            total += price
 
         total_label.configure(text=f"Total: Rs. {total}")
 
@@ -57,19 +60,25 @@ def open_dashboard(username, role):
 
         conn = sqlite3.connect("database/pos.db")
         c = conn.cursor()
-        total = sum([item[2] for item in cart])
+        total = sum([item[2] for item in cart])  # Sum of prices
 
-        for item in cart:
-            c.execute("INSERT INTO sales (product_id, quantity, total, date) VALUES (?, ?, ?, ?)",
-                      (item[0], 1, item[2], datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-            c.execute("UPDATE products SET quantity = quantity - 1 WHERE id = ?", (item[0],))
+        try:
+            for item in cart:
+                product_id, name, price, qty = item
+                c.execute("INSERT INTO sales (product_id, quantity, total, date) VALUES (?, ?, ?, ?)",
+                        (product_id, 1, price, datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+                c.execute("UPDATE products SET quantity = quantity - 1 WHERE id = ?", (product_id,))
 
-        conn.commit()
-        conn.close()
-        cart.clear()
-        update_cart()
-        load_products()
-        messagebox.showinfo("Success", f"Checkout complete!\nRs. {total} collected.")
+            conn.commit()
+            conn.close()
+            cart.clear()
+            update_cart()
+            load_products()
+            messagebox.showinfo("Success", f"Checkout complete!\nRs. {total} collected.")
+        except Exception as e:
+            conn.rollback()
+            conn.close()
+            messagebox.showerror("Error", f"Checkout failed: {str(e)}")
 
     # --- Layout ---
     left_panel = ctk.CTkFrame(app, width=300)
@@ -99,12 +108,12 @@ def open_dashboard(username, role):
 
     # --- Right (User Info) ---
     ctk.CTkLabel(right_panel, text=f"👤 Logged in as: {username}", font=ctk.CTkFont(size=14)).pack(pady=20)
-    ctk.CTkLabel(right_panel, text="Role: " + role).pack(pady=5)
+    ctk.CTkLabel(right_panel, text=f"Role: {role}", font=ctk.CTkFont(size=12)).pack(pady=5)
     ctk.CTkButton(right_panel, text="🔄 Refresh Products", command=load_products).pack(pady=10)
     ctk.CTkButton(right_panel, text="🚪 Logout", fg_color="red", command=app.destroy).pack(pady=40)
 
     # --- Admin Controls ---
-    if role == "admin":
+    if role.lower() == "admin":
         ctk.CTkLabel(right_panel, text="🛠️ Admin Panel", font=ctk.CTkFont(size=15)).pack(pady=5)
 
         name_entry = ctk.CTkEntry(right_panel, placeholder_text="Product Name")
@@ -138,5 +147,6 @@ def open_dashboard(username, role):
 
         ctk.CTkButton(right_panel, text="➕ Add Product", command=add_product).pack(pady=10)
 
+    # Initialize products display
     load_products()
     app.mainloop()
