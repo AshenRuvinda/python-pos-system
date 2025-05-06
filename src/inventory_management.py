@@ -152,17 +152,47 @@ def open_inventory_management(username, role):
             messagebox.showwarning("No Selection", "Please select a product to delete")
             return
         
-        if messagebox.askyesno("Confirm Delete", "Are you sure you want to delete this product?"):
+        # Get product name for better confirmation message
+        selected_item = product_tree.focus()
+        if selected_item:
+            values = product_tree.item(selected_item, 'values')
+            product_name = values[1] if values else "this product"
+        else:
+            product_name = "this product"
+        
+        if messagebox.askyesno("Confirm Delete", f"Are you sure you want to delete '{product_name}'?"):
             try:
                 conn = sqlite3.connect("database/pos.db")
                 c = conn.cursor()
-                c.execute("DELETE FROM products WHERE id=?", (selected_id,))
-                conn.commit()
-                conn.close()
                 
-                load_products()
-                clear_form()
-                messagebox.showinfo("Success", "Product deleted successfully")
+                # Check if product is referenced in sales
+                c.execute("SELECT COUNT(*) FROM sales WHERE product_id=?", (selected_id,))
+                sales_count = c.fetchone()[0]
+                
+                if sales_count > 0:
+                    if messagebox.askyesno("Warning", f"This product has {sales_count} sales records associated with it. Deleting it may affect reports. Continue?"):
+                        # Proceed with deletion
+                        c.execute("DELETE FROM products WHERE id=?", (selected_id,))
+                        conn.commit()
+                        conn.close()
+                        
+                        load_products()
+                        clear_form()
+                        messagebox.showinfo("Success", f"Product '{product_name}' deleted successfully")
+                    else:
+                        conn.close()
+                        return
+                else:
+                    # No sales records, proceed with deletion
+                    c.execute("DELETE FROM products WHERE id=?", (selected_id,))
+                    conn.commit()
+                    conn.close()
+                    
+                    load_products()
+                    clear_form()
+                    messagebox.showinfo("Success", f"Product '{product_name}' deleted successfully")
+            except sqlite3.Error as e:
+                messagebox.showerror("Database Error", f"Failed to delete product: {str(e)}")
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to delete product: {str(e)}")
     
